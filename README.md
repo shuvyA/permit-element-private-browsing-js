@@ -138,19 +138,35 @@ Your backend must implement a `/login_header` endpoint that:
 **Example with Permit SDK (Node.js):**
 ```javascript
 const { Permit } = require('permitio');
+const express = require("express");
+const cors = require('cors');
+
+// server/index.js
+const path = require('path');
+require('dotenv').config({path: path.resolve(__dirname, '../.env')});
+const app = express();
+const port = 8080;
+
+// Configure CORS
+const corsOptions = {
+    origin: 'http://localhost:3001', // Replace with your frontend URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204,
+    accessControlAllowOrigin: '*'
+};
+
+app.use(cors(corsOptions));
 const permit = new Permit({ token: 'YOUR_PERMIT_API_KEY' });
 
-app.post('/login_header', async (req, res) => {
-    try {
-        const token = await permit.elements.loginAs({
-            userId: 'user_123',
-            tenant: 'default'
-        });
-        
-        res.json({ success: true, token });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
+app.post("/login_header", async (req, res) => {
+    const ticket = await permit.elements.loginAs({userId: USER_KEY, tenantId: TENANT_ID});
+    res.status(200).json({url: ticket.element_bearer_token});
+});
+
+
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`);
 });
 ```
 
